@@ -1,7 +1,7 @@
 // Yes, only a single .ts file
 
 export default defineNitroPlugin(nitroApp => {
-  nitroApp.hooks.hook('request', async (event) => {
+  nitroApp.hooks.hook('afterResponse', async (event) => {
     const config = useRuntimeConfig()
 
     const options = config.vrcdServerSideLogging as LoggerOptions ?? {
@@ -38,12 +38,21 @@ export default defineNitroPlugin(nitroApp => {
 
     const requestTimestamp = Date.now()
 
+    const rawResponseHeaders = event.node.res.getHeaders()
+    const responseHeaders: Record<string, string | undefined> = {}
+
+    Object.keys(rawResponseHeaders).forEach(key => {
+      responseHeaders[key] = String(rawResponseHeaders[key])
+    })
+
     const log: Log = {
       headers,
       url,
       method,
       'client_ip': clientIp,
       'request-timestamp': String(requestTimestamp),
+      'response-headers': responseHeaders,
+      'response-status': event.node.res.statusCode
     }
 
     console.log(JSON.stringify(log))
@@ -88,6 +97,8 @@ function postLog(
 
 export interface Log {
   'headers': Record<string, string | undefined>
+  'response-headers': Record<string, string | undefined>
+  'response-status': number
   'url': {
     path: string
     protocol: string
