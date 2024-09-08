@@ -1,7 +1,7 @@
 // Yes, only a single .ts file
 
 export default defineNitroPlugin(nitroApp => {
-  nitroApp.hooks.hook('afterResponse', async (event) => {
+  nitroApp.hooks.hook('beforeResponse', async (event) => {
     const config = useRuntimeConfig()
 
     const options = config.vrcdServerSideLogging as LoggerOptions ?? {
